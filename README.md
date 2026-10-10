@@ -34,19 +34,4 @@ This is a browser-based AI Voice Customer Support Agent built for Aura Skincare,
 - **Premium UI:** Custom dark-theme glassmorphism interface featuring a dynamic, state-reactive glowing energy aura.
 - **Order Lookup:** Live order status checks and policy-compliant cancellation/return logic handled deterministically via function calling.
 
-## Assessment Questions
 
-**1. Why did you choose your particular architecture and technology stack?**  
-I chose Next.js (App Router) for the frontend because it seamlessly integrates secure server-side logic (generating ephemeral API tokens and executing tool calls safely) alongside a robust React UI. For voice intelligence, I chose the **Gemini 3.8 Multimodal Live API via direct WebSockets**. Instead of a traditional, latency-heavy sequential pipeline (Speech-to-Text → LLM → Text-to-Speech), this architecture allows the AI to natively ingest raw audio and stream audio back. This drastically reduces latency, enables natural conversational flow, and natively supports "barge-in" (interrupting the AI mid-sentence).
-
-**2. What was the most difficult part of the assignment, and how did you solve it?**  
-The most challenging part was managing the real-time, bi-directional audio pipeline in the browser — specifically capturing 16kHz PCM audio without distortion and cleanly playing back the raw PCM streams received from the Gemini API. I solved this by implementing a custom Web Audio API `AudioWorklet` processor. This runs audio capture on a separate thread, preventing main-thread UI blocking, ensuring ultra-low latency, and allowing for instant audio interruption during a barge-in event.
-
-**3. If you had one more week to work on this, what would you improve first and why?**  
-I would implement **Retrieval-Augmented Generation (RAG)** for the brand's knowledge base. Right now, Aura Skincare's policies are hardcoded into the system prompt. Moving the knowledge base to a vector database would allow the agent to support thousands of products, FAQs, and complex changing policies without overflowing the system context window. Secondly, I would connect the mock `order-database.js` to a real PostgreSQL database with proper error handling for network timeouts.
-
-**4. Imagine this agent is handling 1,000 customer conversations a day. What do you think would need to change or improve?**  
-To scale to 1,000 daily conversations, three things must improve:
-- **Infrastructure:** Relying on the client browser to maintain direct, long-lived WebSockets with the AI provider can be flaky on poor mobile networks. I would move the connection termination to a dedicated WebRTC infrastructure (like LiveKit or Twilio Media Streams) to handle network drops gracefully.
-- **Observability:** We would need robust analytics—logging transcripts, running sentiment analysis on the generated summaries, and tracking tool-call failure rates to continuously fine-tune the prompt.
-- **Human Handoff:** There must be an automated, graceful routing mechanism to transfer the call to a human agent (e.g., via Zendesk) if the AI detects high customer frustration or fails to resolve the issue after a certain number of turns.
